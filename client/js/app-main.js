@@ -95,7 +95,7 @@ class AppMain extends LitElement {
     return html`
       <h1>Waiting lobby.</h1>
       <p>Share the following link to your friends to let them join the game:</p>
-      <p>TODO/?gameId=${this.gameId}</p>
+      <p>${location.origin}/?gameId=${this.gameId}</p>
       <h2>Players connected</h2>
       <ul>
         ${this.players.map(nick => html`
