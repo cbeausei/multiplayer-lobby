@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="module" src="js/app-main.js"></script>
+  </head>
+  <body>
+    <app-main id="app"></app-main>
+    <script>
+      const app = document.getElementById('app');
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('gameId')) {
+        const gameId = urlParams.get('gameId');
+        app.setAttribute('gameId', gameId);
+      }
+    </script>
+  </body>
+</html>

@@ -13,14 +13,10 @@ const clientRoot = __dirname + '/client/';
 const jsonParser = bodyParser.json();
 
 // Include the JS client.
-app.use('/js', express.static('client/components'));
+app.use('/js', express.static('client/js'));
 
 // Serve the JS client
 app.get('/', (req, res) => {
-  res.sendFile(clientRoot + 'index.html');
-});
-app.get('/:gameId', (req, res) => {
-  console.log(req.params.gameId);
   res.sendFile(clientRoot + 'index.html');
 });
 
