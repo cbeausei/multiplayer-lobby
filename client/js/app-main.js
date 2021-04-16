@@ -133,8 +133,25 @@ class AppMain extends LitElement {
     return this.renderGamePage();
   }
 
-  startGame() {
-    this.gameStarted = true;
+  async queryServer(path, request) {
+    const response = await fetch(path, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...request,
+        gameId: this.gameId,
+        playerId: this.playerId,
+      }),
+    });
+    const json = await response.json();
+    return json;
+  }
+
+  async startGame() {
+    const update = await this.queryServer('/game/start');
+    this.handleUpdate(update);
   }
 
   async createGame() {
@@ -145,17 +162,7 @@ class AppMain extends LitElement {
 
   async createPlayer() {
     this.nick = this.shadowRoot.getElementById('input').value;
-    const response = await fetch('/game/join', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        gameId: this.gameId,
-        nick: this.nick,
-      }),
-    });
-    const info = await response.json();
+    const info = await this.queryServer('/game/join', {nick: this.nick});
     this.playerId = info.playerId;
     this.players = info.players;
     this.requestServerUpdate();
@@ -163,20 +170,18 @@ class AppMain extends LitElement {
 
   async requestServerUpdate() {
     setTimeout(() => this.requestServerUpdate(), 1000);
-    const response = await fetch('/game/update', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        gameId: this.gameId,
-      }),
-    });
-    const update = await response.json();
+    const update = await this.queryServer('/game/update');
+    this.handleUpdate(update);
+  } 
+
+  handleUpdate(update) {
     if (update.players) {
       this.players = update.players;
     }
-  } 
+    if (update.started === true) {
+      this.gameStarted = true;      
+    }
+  }
 }
 
 customElements.define('app-main', AppMain);

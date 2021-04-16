@@ -36,6 +36,15 @@ app.post('/game/join', jsonParser, async (req, res) => {
   res.send({playerId, players});
 });
 
+// Player starts a game.
+app.post('/game/start', jsonParser, async (req, res) => {
+  const gameId = req.body.gameId;
+  const playerId = req.body.playerId;
+  await startGame(gameId, playerId);
+  const update = await getGameUpdate(gameId);
+  res.send(update);
+});
+
 // Game update.
 app.post('/game/update', jsonParser, async (req, res) => {
   const update = await getGameUpdate(req.body.gameId);
@@ -63,6 +72,26 @@ function createGame(gameId: number): void {
   });
 }
 
+async function startGame(gameId: number, playerId: number) {
+  // TODO: check the player is allowed to start the game.
+  let client = null;
+  try {
+    client = await MongoClient.connect(mongoUrl, opts);
+  } catch (err) {
+    throw err;
+  }
+  const db = client.db('mydb');
+  const gameQuery = {gameId};
+  try {
+    const collection = db.collection('games');
+    await collection.updateOne(gameQuery, {$set: {started: true}});
+  } catch (err) {
+    throw err;
+  } finally {
+    client.close();
+  };
+}
+
 async function joinGame(gameId: number, nick: string, playerId: number) {
   let players = [];
   let client = null;
@@ -78,7 +107,7 @@ async function joinGame(gameId: number, nick: string, playerId: number) {
     const res = await collection.findOne(gameQuery);
     players = res.players || [];
     players.push({nick, playerId});
-    await collection.updateOne(gameQuery, {$set: {gameId, started: false, players}});
+    await collection.updateOne(gameQuery, {$set: {started: false, players}});
   } catch (err) {
     throw err;
   } finally {
@@ -90,6 +119,7 @@ async function joinGame(gameId: number, nick: string, playerId: number) {
 async function getGameUpdate(gameId: number) {
   let players = [];
   let client = null;
+  let update = {};
   try {
     client = await MongoClient.connect(mongoUrl, opts);
   } catch (err) {
@@ -100,15 +130,21 @@ async function getGameUpdate(gameId: number) {
   try {
     const collection = db.collection('games');
     const res = await collection.findOne(gameQuery);
+    update = {
+      ...update,
+      started: res.started,
+    }
     players = res?.players || null;
   } catch (err) {
     throw err;
   } finally {
     client.close();
   };
-  const update = {players: null};
   if (players) {
-    update.players = players.map((player: any) => player.nick);
+    update = {
+      ...update,
+      players: players.map((player: any) => player.nick),
+    }
   }
   return update;
 }
