@@ -63,26 +63,37 @@ class AppMain extends LitElement {
     `
   }
 
-  // Templates below.
-
-  renderLandingPage() {
+  centerContent() {
     return html`
-      ${this.getSharedStyles()}
       <style>
         :host {
           align-items: center;
           justify-content: center;
         }
       </style>
-      <div button xlarge @click="${this.createGame}">Create a new game</div>
+    `;
+  }
+
+  // Templates below.
+
+  renderLandingPage() {
+    return html`
+      ${this.getSharedStyles()}
+      ${this.centerContent()}
+      <div content>
+        <div content-title></div>
+        <div button xlarge @click="${this.createGame}">Create a new game</div>
+      </div>
     `;
   }
 
   renderNickSelectionPage() {
     return html`
+      ${this.getSharedStyles()}
+      ${this.centerContent()}
       <h2>Pick a nickname:</h2>
       <input id="input" type="text">
-      <button @click="${this.createPlayer}">Enter</button>
+      <div button large @click="${this.createPlayer}">Enter</div>
     `;
   }
 
